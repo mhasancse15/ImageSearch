@@ -6,6 +6,8 @@ import androidx.fragment.app.Fragment
 import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.paging.PagingData
+import androidx.recyclerview.widget.GridLayoutManager
 import com.mahmudul.imagesearch.R
 import com.mahmudul.imagesearch.common.Constants
 import com.mahmudul.imagesearch.common.Resource
@@ -20,9 +22,20 @@ class SearchImageFragment : Fragment(R.layout.fragment_search_image) {
 
     private val viewModel: ImageSearchViewModel by viewModels()
     private val binding by viewBinding(FragmentSearchImageBinding::bind)
+    lateinit var searchImagePagingDataAdapter: SearchImagePagingDataAdapter
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        //RecyclerView
+        searchImagePagingDataAdapter = SearchImagePagingDataAdapter(requireContext())
+        binding.recyclerView.layoutManager = GridLayoutManager(requireContext(),2)
+        binding.recyclerView.apply {
+            layoutManager
+            adapter = searchImagePagingDataAdapter
+        }
+        binding.recyclerView.layoutManager
+
         initViewCollect()
     }
 
@@ -37,7 +50,10 @@ class SearchImageFragment : Fragment(R.layout.fragment_search_image) {
                         }
                         is Resource.Success -> {
                             Log.e("Response", response.data.totalHits.toString())
-                            binding.result.text = response.data.toString()
+                            // binding.result.text = response.data.toString()
+
+                            searchImagePagingDataAdapter.submitData(lifecycle, PagingData.from(response.data.hits))
+
                         }
                         is Resource.Error -> {
 
@@ -54,7 +70,7 @@ class SearchImageFragment : Fragment(R.layout.fragment_search_image) {
                             Log.e("Response", response.throwable.localizedMessage ?: "Error")
                         }
                         else -> {
-                            Log.e("Response",  "Unknown Error")
+                            Log.e("Response", "Unknown Error")
                         }
                     }
                 }
@@ -62,3 +78,4 @@ class SearchImageFragment : Fragment(R.layout.fragment_search_image) {
         }
     }
 }
+
