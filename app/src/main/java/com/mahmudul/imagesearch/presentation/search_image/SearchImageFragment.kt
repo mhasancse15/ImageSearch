@@ -12,6 +12,7 @@ import com.mahmudul.imagesearch.R
 import com.mahmudul.imagesearch.common.Constants
 import com.mahmudul.imagesearch.common.Resource
 import com.mahmudul.imagesearch.databinding.FragmentSearchImageBinding
+import com.mahmudul.imagesearch.domain.adapter.SearchImagePagingDataAdapter
 import com.zhuinden.fragmentviewbindingdelegatekt.viewBinding
 import dagger.hilt.android.AndroidEntryPoint
 import www.sanju.motiontoast.MotionToast
@@ -27,53 +28,55 @@ class SearchImageFragment : Fragment(R.layout.fragment_search_image) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        //RecyclerView
-        searchImagePagingDataAdapter = SearchImagePagingDataAdapter(requireContext())
-        binding.recyclerView.layoutManager = GridLayoutManager(requireContext(),2)
-        binding.recyclerView.apply {
-            layoutManager
-            adapter = searchImagePagingDataAdapter
-        }
-        binding.recyclerView.layoutManager
 
         initViewCollect()
     }
 
     private fun initViewCollect() {
         with(viewModel) {
-            queryImage("tiger", Constants.TOKEN, "photo")
-            viewLifecycleOwner.lifecycleScope.launchWhenStarted {
-                state.collect { response ->
-                    when (response) {
-                        is Resource.Loading -> {
-                            Log.e("Response", "Loading")
-                        }
-                        is Resource.Success -> {
-                            Log.e("Response", response.data.totalHits.toString())
-                            // binding.result.text = response.data.toString()
+            with(binding) {
+                searchImagePagingDataAdapter = SearchImagePagingDataAdapter(requireContext())
+                recyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
+                recyclerView.apply {
+                    layoutManager
+                    adapter = searchImagePagingDataAdapter
+                }
+                recyclerView.layoutManager
 
-                            searchImagePagingDataAdapter.submitData(lifecycle, PagingData.from(response.data.hits))
+                queryImage("tiger", Constants.TOKEN, "photo")
+                viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+                    state.collect { response ->
+                        when (response) {
+                            is Resource.Loading -> {
+                                Log.e("Response", "Loading")
+                            }
+                            is Resource.Success -> {
+                                Log.e("Response", response.data.totalHits.toString())
+                                // binding.result.text = response.data.toString()
+                                searchImagePagingDataAdapter.submitData(
+                                    lifecycle, PagingData.from(response.data.hits)
+                                )
 
-                        }
-                        is Resource.Error -> {
-
-                            MotionToast.createColorToast(
-                                requireActivity(),
-                                getString(R.string.error),
-                                response.throwable.localizedMessage ?: "Error",
-                                MotionToastStyle.ERROR,
-                                MotionToast.GRAVITY_TOP or MotionToast.GRAVITY_CENTER,
-                                MotionToast.LONG_DURATION,
-                                null
-                            )
-
-                            Log.e("Response", response.throwable.localizedMessage ?: "Error")
-                        }
-                        else -> {
-                            Log.e("Response", "Unknown Error")
+                            }
+                            is Resource.Error -> {
+                                MotionToast.createColorToast(
+                                    requireActivity(),
+                                    getString(R.string.error),
+                                    response.throwable.localizedMessage ?: "Error",
+                                    MotionToastStyle.ERROR,
+                                    MotionToast.GRAVITY_TOP or MotionToast.GRAVITY_CENTER,
+                                    MotionToast.LONG_DURATION,
+                                    null
+                                )
+                                Log.e("Response", response.throwable.localizedMessage ?: "Error")
+                            }
+                            else -> {
+                                Log.e("Response", "Unknown Error")
+                            }
                         }
                     }
                 }
+
             }
         }
     }

@@ -1,4 +1,4 @@
-package com.mahmudul.imagesearch.presentation.search_image
+package com.mahmudul.imagesearch.domain.adapter
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -68,6 +68,4 @@ class SearchImagePagingDataAdapter(private val context: Context) :
             ex.message
         }
     }
-
-
 }
