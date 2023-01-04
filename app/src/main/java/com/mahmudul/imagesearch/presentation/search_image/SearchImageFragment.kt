@@ -35,7 +35,7 @@ class SearchImageFragment : Fragment(R.layout.fragment_search_image) {
     private fun initViewCollect() {
         with(viewModel) {
             with(binding) {
-                searchImagePagingDataAdapter = SearchImagePagingDataAdapter(requireContext())
+                searchImagePagingDataAdapter = SearchImagePagingDataAdapter()
                 recyclerView.layoutManager = GridLayoutManager(requireContext(), 2)
                 recyclerView.apply {
                     layoutManager
@@ -51,7 +51,7 @@ class SearchImageFragment : Fragment(R.layout.fragment_search_image) {
                                 Log.e("Response", "Loading")
                             }
                             is Resource.Success -> {
-                                Log.e("Response", response.data.totalHits.toString())
+                                Log.e("Response", response.data.hits.size.toString())
                                 // binding.result.text = response.data.toString()
                                 searchImagePagingDataAdapter.submitData(
                                     lifecycle, PagingData.from(response.data.hits)

@@ -2,16 +2,20 @@ package com.mahmudul.imagesearch.domain.adapter
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
-import com.bumptech.glide.Glide
+import coil.load
+import coil.request.ErrorResult
+import coil.request.ImageRequest
+import com.mahmudul.imagesearch.R
 import com.mahmudul.imagesearch.data.model.Hit
 import com.mahmudul.imagesearch.databinding.SearchImageItemBinding
 
-class SearchImagePagingDataAdapter(private val context: Context) :
+class SearchImagePagingDataAdapter() :
     PagingDataAdapter<Hit, SearchImagePagingDataAdapter.SearchImageViewHolder>(Diff) {
 
 
@@ -54,15 +58,35 @@ class SearchImagePagingDataAdapter(private val context: Context) :
         try {
             val hit = getItem(position)
             if (hit != null) {
-                holder.binding.apply {
-                    title.text = hit.user
+                with(holder.binding) {
+                    title.text = hit.tags
+                    title.isSelected = true
 
-                    Glide.with(context)
-                        .load(hit.userImageURL)
-                        .into(imageView)
+                    if (hit.previewURL.isNotBlank()) {
+                        imageView.load(hit.previewURL) {
+                            placeholder(R.drawable.ic_default_image)
 
+                            listener(
+                                onSuccess = { _, _ ->
+                                    Log.d(
+                                        "imageIssue",
+                                        "Success image Url = " + hit.previewURL
+                                    )
+                                },
+                                onError = { request: ImageRequest, error: ErrorResult ->
+                                    request.error
+                                    imageView.load(R.drawable.ic_default_image)
+                                    Log.d(
+                                        "imageIssue",
+                                        "Exception image Url = " + hit.previewURL + " Error $error"
+                                    )
+                                }
+                            )
+                        }
+                    } else {
+                        imageView.load(R.drawable.ic_default_image)
+                    }
                 }
-
             }
         } catch (ex: Exception) {
             ex.message
